@@ -1,0 +1,12 @@
+names:
+- plat
+nc: 1
+roboflow:
+  license: CC BY 4.0
+  project: korea-car-plat-bubuv
+  url: https://universe.roboflow.com/s-workspace-rfpbj/korea-car-plat-bubuv/dataset/1
+  version: 1
+  workspace: s-workspace-rfpbj
+test: ../test/images
+train: ../train/images
+val: ../valid/images
