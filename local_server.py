@@ -1,73 +1,63 @@
+import cv2
 import requests
-import hashlib
-import time
-import random
 from datetime import datetime
+from ai_pipeline import RealTimePlateReader, LicensePlateEnsembler # 방금 만든 AI 불러오기
 
-# 우리가 만든 AI 앙상블 클래스를 불러옵니다!
-from ai_pipeline import LicensePlateEnsembler 
-
+# 네이버 클라우드 중앙 서버 주소 (코드스페이스 포트포워딩 주소 또는 로컬호스트)
 CENTRAL_SERVER_URL = "http://127.0.0.1:8000/api/entry"
-SALT = "NAVER_AUTOPAY_SECRET_2026"
+PARKING_LOT_ID = "INHA_UNIV_01"
 
-def encrypt_plate(plate_number):
-    """차량 번호를 해시로 암호화"""
-    salted_plate = plate_number + SALT
-    return hashlib.sha256(salted_plate.encode()).hexdigest()
+def run_local_camera():
+    print("🎥 주차장 입구 카메라(AI 탑재)가 켜졌습니다...")
+    
+    # 1. 내가 만든 AI 번호판 인식기와 투표기(앙상블) 장착
+    ai_reader = RealTimePlateReader('runs/detect/train3/weights/best.pt')
+    ensembler = LicensePlateEnsembler(confidence_threshold=0.3)
+    
+    # 2. 테스트용 자동차 동영상 불러오기 (동영상 파일이 없다면 '0'을 넣어 웹캠을 켜도 됩니다)
+    video_path = "korea-car-plat-1/test/images/12-7510_jpg.rf.a9b2c9caac03f136a176e4f1a66ea8b2.jpg" # 준비된 자동차 영상 파일 이름으로 변경하세요!
+    cap = cv2.VideoCapture(video_path) 
+    
+    frame_count = 0
+    print("🚗 차량 진입 감지! AI 분석을 시작합니다...")
 
-def send_entry_data(plate_number, parking_lot_id):
-    """중앙 서버로 결제 승인 요청 전송"""
-    encrypted_plate = encrypt_plate(plate_number)
-    payload = {
-        "plate_number": encrypted_plate,
-        "parking_lot_id": parking_lot_id,
-        "entry_time": datetime.now().isoformat()
-    }
-    
-    print(f"🔒 [보안 통신] 네이버 클라우드로 해시 데이터 전송 중: {encrypted_plate[:15]}...")
-    
-    try:
-        response = requests.post(CENTRAL_SERVER_URL, json=payload)
-        result = response.json()
-        
-        if result["open_gate"]:
-            print("🟢 [응답] 네이버페이 확인 완료! 차단기를 개방합니다!\n")
-        else:
-            print("🔴 [응답] 미등록 유저입니다. 일반 발권기로 안내합니다.\n")
+    # 30프레임(약 1초) 동안만 빠르게 번호판을 스캔합니다.
+    while cap.isOpened() and frame_count < 150:
+        ret, frame = cap.read()
+        if not ret: break
             
-    except requests.exceptions.ConnectionError:
-        print("⚠️ [장애] 중앙 서버 통신 불가. 엣지 컴퓨팅(오프라인) 모드로 전환합니다.\n")
+        # AI가 사진을 보고 번호판을 읽습니다.
+        plate_text, confidence = ai_reader.process_frame(frame)
+        
+        if plate_text:
+            ensembler.add_frame_result(plate_text, confidence)
+            print(f"[{frame_count}/30] AI 인식 중... : {plate_text} (확신도: {confidence:.2f})")
+            
+        frame_count += 1
 
-def run_automated_gate_system():
-    """카메라 AI 분석부터 서버 전송까지의 전체 자동화 프로세스"""
-    print("\n" + "="*50)
-    print("🚗 [CCTV 가동] 차량 진입 감지! AI 분석을 시작합니다...")
-    print("="*50)
+    cap.release()
     
-    ensembler = LicensePlateEnsembler()
+    # 3. 분석 결과를 종합하여 최종 번호판 도출
+    final_plate, msg = ensembler.get_final_result()
     
-    # 카메라가 3초간 90프레임을 찍는 과정을 시뮬레이션
-    for i in range(1, 91):
-        if random.random() < 0.7:
-            text, conf = "12가3456", round(random.uniform(0.7, 0.99), 2)
-        else:
-            text, conf = random.choice(["12가3458", "12다3456"]), round(random.uniform(0.4, 0.7), 2)
-        ensembler.add_frame_result(text, conf)
-        time.sleep(0.01) # 빠른 시연을 위해 대기 시간 단축
-
-    # AI의 최종 결단
-    final_plate, status_msg = ensembler.get_final_result()
-    print(f"🧠 [AI 최종 판단] 번호: {final_plate} | 상태: {status_msg}")
-
-    # 킬러 로직: AI가 '최종 승인'을 내렸을 때만 서버로 결제 요청을 보냄
-    if "최종 승인 완료" in status_msg:
-        print("🚀 [승인] 오인식 위험 없음. 네이버 클라우드로 결제를 요청합니다!")
-        send_entry_data(final_plate, "A101")
+    if final_plate:
+        print(f"\n🎯 [최종 판독 완료] 차량 번호: {final_plate}")
+        print("🌐 네이버 클라우드 중앙 서버로 데이터를 전송합니다...")
+        
+        # 4. 중앙 서버로 데이터 쏘기!
+        payload = {
+            "plate_number": final_plate,
+            "parking_lot_id": PARKING_LOT_ID,
+            "entry_time": datetime.now().isoformat()
+        }
+        
+        try:
+            response = requests.post(CENTRAL_SERVER_URL, json=payload)
+            print("📬 중앙 서버 응답:", response.json())
+        except Exception as e:
+            print("❌ 서버 전송 실패:", e)
     else:
-        print("🛑 [차단] 인식률 저하(오결제 위험). 서버로 데이터를 보내지 않고 수동 결제로 우회합니다.")
+        print("\n❌ 번호판을 명확히 인식하지 못했습니다. 차단기를 열지 않습니다.")
 
 if __name__ == "__main__":
-    # 시스템 무한 가동 (실제 환경처럼 계속 차량을 기다림)
-    while True:
-        run_automated_gate_system()
-        time.sleep(5) # 다음 차량이 들어올 때까지 5초 대기
+    run_local_camera()

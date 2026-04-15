@@ -1,75 +1,63 @@
+import os
+import cv2
+import numpy as np
+from ultralytics import YOLO
 import collections
-import random
-import time
+
+# 에러 방지 설정
+os.environ['FLAGS_enable_mkldnn'] = '0'
+
+class RealTimePlateReader:
+    def __init__(self, yolo_model_path='runs/detect/train3/weights/best.pt'):
+        print("🧠 찐 AI 엔진(Paddle 2.6.2) 가동 준비 중...")
+        self.yolo = YOLO(yolo_model_path)
+        
+        from paddleocr import PaddleOCR
+        # 에러를 유발했던 show_log 등을 완벽히 제거한 순정 모드
+        self.ocr_reader = PaddleOCR(lang='korean', use_angle_cls=False)
+        print("✅ 진짜 AI 뇌(PaddleOCR) 탑재 완료!")
+
+    def process_frame(self, frame_image):
+        results = self.yolo(frame_image, verbose=False)
+        
+        for result in results:
+            for box in result.boxes:
+                # 1. YOLO가 번호판 네모 박스를 찾음!
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                pad = 10
+                y1_p, y2_p = max(0, y1-pad), min(frame_image.shape[0], y2+pad)
+                x1_p, x2_p = max(0, x1-pad), min(frame_image.shape[1], x2+pad)
+                cropped = frame_image[y1_p:y2_p, x1_p:x2_p]
+                
+                # 2. OCR이 글자를 또렷하게 읽도록 명암 전처리 및 뻥튀기
+                gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
+                clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+                enhanced = clahe.apply(gray)
+                bigger = cv2.resize(enhanced, None, fx=2, fy=2)
+                color_ready = cv2.cvtColor(bigger, cv2.COLOR_GRAY2BGR)
+                
+                # 3. 진짜 PaddleOCR 가동
+                ocr_res = self.ocr_reader.ocr(color_ready)
+                if ocr_res and ocr_res[0]:
+                    for line in ocr_res[0]:
+                        text, prob = line[1][0], line[1][1]
+                        clean_text = "".join(filter(str.isalnum, text))
+                        
+                        # 한국 번호판 길이(최소 4글자 이상)일 때만 정답으로 인정
+                        if len(clean_text) >= 4:
+                            return clean_text, prob
+
+        return None, 0.0
 
 class LicensePlateEnsembler:
-    def __init__(self, confidence_threshold=0.6, final_score_threshold=0.80):
-        self.frame_results = []
-        self.conf_threshold = confidence_threshold
-        self.final_threshold = final_score_threshold
-
-    def add_frame_result(self, text, confidence):
-        """프레임 결과를 리스트에 수집 (저품질 필터링 포함)"""
-        if confidence >= self.conf_threshold: 
-            self.frame_results.append((text, confidence))
-
+    def __init__(self, confidence_threshold=0.3): # 확신도 30% 이상만 취급
+        self.confidence_threshold = confidence_threshold
+        self.results = collections.defaultdict(float)
+        
+    def add_frame_result(self, text, conf):
+        if conf >= self.confidence_threshold:
+            self.results[text] += conf
+            
     def get_final_result(self):
-        """가중치 투표를 통해 최종 결과 도출"""
-        if not self.frame_results:
-            return None, "인식 실패 (유효 프레임 없음)"
-
-        # 텍스트별로 확신도 점수 합산
-        score_board = collections.defaultdict(float)
-        for text, conf in self.frame_results:
-            score_board[text] += conf
-        
-        # 가장 점수가 높은 1등 문자열 찾기
-        best_text = max(score_board, key=score_board.get)
-        
-        # 최종 점수 정규화 (평균 확신도 계산)
-        total_valid_frames = len(self.frame_results)
-        average_confidence = score_board[best_text] / total_valid_frames
-
-        if average_confidence >= self.final_threshold:
-            return best_text, f"최종 승인 완료 (평균 확신도: {average_confidence:.2f})"
-        else:
-            return best_text, f"확신도 미달, 수동 전환 (평균 확신도: {average_confidence:.2f})"
-
-# ==========================================
-# 🚗 시뮬레이션 테스트 실행 코드
-# ==========================================
-if __name__ == "__main__":
-    print("🎥 [AI 시뮬레이션] 3초간 90프레임 분석을 시작합니다...")
-    
-    ensembler = LicensePlateEnsembler()
-    
-    # 90번의 카메라 프레임 캡처를 흉내 냅니다.
-    for i in range(1, 91):
-        # 70% 확률로 정답, 30% 확률로 노이즈(오답)가 찍힌다고 가정
-        if random.random() < 0.7:
-            # 정답을 읽었을 때는 확신도가 높음 (0.7 ~ 0.99)
-            text = "12가3456"
-            conf = round(random.uniform(0.7, 0.99), 2)
-        else:
-            # 오답을 읽었을 때는 비가 오거나 흔들려서 확신도가 낮음 (0.4 ~ 0.7)
-            text = random.choice(["12가3458", "12다3456", "72가3456"])
-            conf = round(random.uniform(0.4, 0.7), 2)
-        
-        # 앙상블 모델에 데이터 집어넣기
-        ensembler.add_frame_result(text, conf)
-        
-        # 터미널에 진행 상황 살짝 보여주기 (너무 길어지니 10번마다 출력)
-        if i % 10 == 0:
-            print(f"  👉 프레임 {i}/90 수집 중... (인식: {text}, 확신도: {conf})")
-        
-        time.sleep(0.02) # 실제 프레임 처리 시간을 흉내 냄
-        
-    print("\n📊 데이터 수집 완료. 가중치 투표를 진행합니다...")
-    time.sleep(1)
-    
-    # 최종 결과 발표!
-    final_plate, status_msg = ensembler.get_final_result()
-    print("=" * 40)
-    print(f"🎯 최종 인식 번호 : {final_plate}")
-    print(f"💡 판단 결과     : {status_msg}")
-    print("=" * 40)
+        if not self.results: return None, "인식 실패"
+        return max(self.results, key=self.results.get), "최종 확정"
