@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 import collections
+import re
 
 # 에러 방지 설정
 os.environ['FLAGS_enable_mkldnn'] = '0'
@@ -13,7 +14,6 @@ class RealTimePlateReader:
         self.yolo = YOLO(yolo_model_path)
         
         from paddleocr import PaddleOCR
-        # 에러를 유발했던 show_log 등을 완벽히 제거한 순정 모드
         self.ocr_reader = PaddleOCR(lang='korean', use_angle_cls=False)
         print("✅ 진짜 AI 뇌(PaddleOCR) 탑재 완료!")
 
@@ -22,35 +22,48 @@ class RealTimePlateReader:
         
         for result in results:
             for box in result.boxes:
-                # 1. YOLO가 번호판 네모 박스를 찾음!
+                # 1. YOLO 번호판 추출
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
                 pad = 10
                 y1_p, y2_p = max(0, y1-pad), min(frame_image.shape[0], y2+pad)
                 x1_p, x2_p = max(0, x1-pad), min(frame_image.shape[1], x2+pad)
                 cropped = frame_image[y1_p:y2_p, x1_p:x2_p]
                 
-                # 2. OCR이 글자를 또렷하게 읽도록 명암 전처리 및 뻥튀기
+                # 2. 전처리 (가장 잘 되었던 기본 모드)
                 gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
                 clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
                 enhanced = clahe.apply(gray)
-                bigger = cv2.resize(enhanced, None, fx=2, fy=2)
+                bigger = cv2.resize(enhanced, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
                 color_ready = cv2.cvtColor(bigger, cv2.COLOR_GRAY2BGR)
                 
-                # 3. 진짜 PaddleOCR 가동
+                # 3. OCR 실행
                 ocr_res = self.ocr_reader.ocr(color_ready)
+                
                 if ocr_res and ocr_res[0]:
-                    for line in ocr_res[0]:
-                        text, prob = line[1][0], line[1][1]
-                        clean_text = "".join(filter(str.isalnum, text))
-                        
-                        # 한국 번호판 길이(최소 4글자 이상)일 때만 정답으로 인정
-                        if len(clean_text) >= 4:
-                            return clean_text, prob
+                    # ⭐ 핵심: 발견된 글자 뭉치들을 '왼쪽(x좌표)' 기준으로 정렬합니다.
+                    # 이렇게 해야 '3725786조'가 아니라 '786조3725'로 합쳐집니다.
+                    sorted_res = sorted(ocr_res[0], key=lambda x: x[0][0][0])
+                    
+                    raw_text = ""
+                    max_prob = 0.0
+                    for line in sorted_res:
+                        raw_text += line[1][0]
+                        max_prob = max(max_prob, line[1][1])
+
+                    # 특수문자 제거
+                    clean_text = "".join(re.findall(r'[0-9가-힣]', raw_text))
+                    
+                    # 4. 정규표현식으로 최종 번호 추출
+                    match = re.search(r'(\d{2,3}[가-힣]\d{4})', clean_text)
+                    if match:
+                        return match.group(1), max_prob
+                    elif len(clean_text) >= 4:
+                        return clean_text, max_prob
 
         return None, 0.0
 
 class LicensePlateEnsembler:
-    def __init__(self, confidence_threshold=0.3): # 확신도 30% 이상만 취급
+    def __init__(self, confidence_threshold=0.3):
         self.confidence_threshold = confidence_threshold
         self.results = collections.defaultdict(float)
         
