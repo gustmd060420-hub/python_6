@@ -1,3 +1,4 @@
+import uvicorn # <-- 서버 실행을 위해 추가된 라이브러리
 from fastapi import FastAPI
 from pydantic import BaseModel
 from datetime import datetime
@@ -34,3 +35,7 @@ async def handle_vehicle_entry(request: EntryRequest):
     else:
         print("❌ 등록되지 않은 해시 데이터입니다.")
         return {"open_gate": False, "message": "미등록 유저 - 일반 발권 진행"}
+
+# <-- 이 부분이 추가되었습니다! (서버 무한 실행 스위치)
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -15,7 +15,8 @@ def run_local_camera():
     ensembler = LicensePlateEnsembler(confidence_threshold=0.3)
     
     # 2. 테스트용 자동차 동영상 불러오기 (동영상 파일이 없다면 '0'을 넣어 웹캠을 켜도 됩니다)
-    video_path = "korea-car-plat-1/test/images/12-7510_jpg.rf.a9b2c9caac03f136a176e4f1a66ea8b2.jpg" # 준비된 자동차 영상 파일 이름으로 변경하세요!
+# 2. 테스트용 자동차 동영상 불러오기 
+    video_path = "images_car1.jpg"
     cap = cv2.VideoCapture(video_path) 
     
     frame_count = 0
