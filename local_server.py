@@ -16,25 +16,33 @@ def run_local_camera():
     
     # 2. 테스트용 자동차 동영상 불러오기 (동영상 파일이 없다면 '0'을 넣어 웹캠을 켜도 됩니다)
 # 2. 테스트용 자동차 동영상 불러오기 
-    video_path = "images_car1.jpg"
+    video_path = "test_video1.mp4"
     cap = cv2.VideoCapture(video_path) 
     
     frame_count = 0
     print("🚗 차량 진입 감지! AI 분석을 시작합니다...")
 
     # 30프레임(약 1초) 동안만 빠르게 번호판을 스캔합니다.
-    while cap.isOpened() and frame_count < 150:
+# 💡 유효한 번호판 데이터 30장을 모을 때까지 계속 영상을 봅니다.
+# 💡 [수정됨] 유효한 번호판 데이터 30장을 모을 때까지 계속 영상을 봅니다.
+    valid_frames = 0  # 번호판을 찾은 진짜 횟수
+
+    while cap.isOpened():
         ret, frame = cap.read()
-        if not ret: break
+        if not ret: 
+            break
             
-        # AI가 사진을 보고 번호판을 읽습니다.
         plate_text, confidence = ai_reader.process_frame(frame)
         
+        # 🚗 번호판을 찾았을 때만 로직 실행! (텅 빈 도로는 자연스럽게 무시됨)
         if plate_text:
             ensembler.add_frame_result(plate_text, confidence)
-            print(f"[{frame_count}/30] AI 인식 중... : {plate_text} (확신도: {confidence:.2f})")
+            valid_frames += 1  # 💡 핵심: 번호판을 찾았을 때만 카운트 1 증가
+            print(f"[{valid_frames}/30] AI 인식 중... : {plate_text} (확신도: {confidence:.2f})")
             
-        frame_count += 1
+        # 유효한 표를 30장 다 모았다면 투표 종료!
+        if valid_frames >= 30:
+            break
 
     cap.release()
     
@@ -60,5 +68,5 @@ def run_local_camera():
     else:
         print("\n❌ 번호판을 명확히 인식하지 못했습니다. 차단기를 열지 않습니다.")
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
     run_local_camera()
