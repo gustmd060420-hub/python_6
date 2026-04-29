@@ -11,7 +11,7 @@ def run_local_camera():
     print("🎥 주차장 입구 카메라(AI 탑재)가 켜졌습니다...")
     
     # 1. 내가 만든 AI 번호판 인식기와 투표기(앙상블) 장착
-    ai_reader = RealTimePlateReader('runs/detect/train3/weights/best.pt')
+    ai_reader = RealTimePlateReader('best.pt')
     ensembler = LicensePlateEnsembler(confidence_threshold=0.3)
     
     # 2. 테스트용 자동차 동영상 불러오기 (동영상 파일이 없다면 '0'을 넣어 웹캠을 켜도 됩니다)

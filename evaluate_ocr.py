@@ -33,11 +33,18 @@ for filename in os.listdir(data_dir):
     # 1. 정답 추출: 파일 이름에서 확장자(.jpg) 떼고 모든 띄어쓰기 제거
     ground_truth = os.path.splitext(filename)[0].replace(" ", "")
 
-    # 2. 이미지 전처리 및 OCR 인식
+    # 2. 이미지 읽어서 AI(PaddleOCR)로 번호판 인식
     img_path = os.path.join(data_dir, filename)
     
-    # 전처리 없이 원본 이미지 경로를 그대로 AI에게 넘김 (32% 달성 버전)
-    result = ocr.ocr(img_path, cls=True)
+    # 한글 경로 에러 방지 우회 코드
+    img_array = np.fromfile(img_path, np.uint8)
+    img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+    
+    # value=[0,0,0]을 지우고, BORDER_CONSTANT를 BORDER_REPLICATE로 바꿉니다.
+    padded_img = cv2.copyMakeBorder(img, 15, 15, 15, 15, cv2.BORDER_REPLICATE)
+
+    # 원본(img_path) 대신 여백이 추가된 사진(padded_img)을 OCR에게 넘겨줍니다.
+    result = ocr.ocr(padded_img, cls=True)
 
     # 3. AI가 인식한 텍스트 합치기 및 후처리 (해상도 자동 맞춤 정렬!)
     predicted_text = ""
