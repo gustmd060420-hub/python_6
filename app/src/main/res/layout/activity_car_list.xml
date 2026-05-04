@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_light_green"
+    android:fitsSystemWindows="true">
+
+    <!-- 상단 헤더 (뒤로가기 및 제목) -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:paddingHorizontal="20dp">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="@color/text_dark"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="차량등록"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_dark" />
+    </RelativeLayout>
+
+    <!-- 요약 및 추가 버튼 영역 -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="16dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_centerVertical="true">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="등록된 차량"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_dark"/>
+            <TextView
+                android:id="@+id/tvTotalCarCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="총 0대"
+                android:textSize="14sp"
+                android:textColor="@color/text_gray"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnAddCar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:text="+ 차량 추가"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/main_green"
+            app:cornerRadius="20dp"/>
+    </RelativeLayout>
+
+    <!-- 차량 리스트가 표시될 RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewCars"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="8dp"
+        android:clipToPadding="false"/>
+</LinearLayout>

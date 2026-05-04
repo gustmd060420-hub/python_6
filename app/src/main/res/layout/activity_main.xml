@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_light_green"
+    android:fitsSystemWindows="true">
+
+    <!-- 1. 상단 헤더 (로고 및 프로필) -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:paddingHorizontal="24dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@android:drawable/ic_menu_directions"
+                app:tint="@color/main_green"
+                android:layout_marginEnd="8dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="주차패스"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_dark"/>
+        </LinearLayout>
+
+        <!-- 우측 프로필 아이콘 -->
+        <ImageView
+            android:id="@+id/btnProfile"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/ic_launcher_background"
+            android:backgroundTint="@color/main_green"
+            android:src="@android:drawable/ic_menu_myplaces"
+            app:tint="@color/white"
+            android:padding="8dp"/>
+    </RelativeLayout>
+
+    <!-- 스크롤 영역 시작 -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none"
+        android:paddingHorizontal="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="40dp">
+
+            <!-- 2. 2x2 메뉴 그리드 (첫 번째 줄) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="16dp"
+                android:baselineAligned="false">
+
+                <!-- [차량 등록] 버튼 -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/btnNavCar"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#E0E0E0">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+                        <ImageView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:src="@android:drawable/ic_menu_directions"
+                            android:background="@color/icon_bg_green"
+                            android:padding="12dp"
+                            app:tint="@color/main_green"
+                            android:layout_marginBottom="16dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="차량등록" android:textColor="@color/text_dark" android:textStyle="bold" android:textSize="16sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="내 차량 정보 관리" android:textColor="@color/text_gray" android:textSize="12sp" android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- [주차장 찾기] 버튼 -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/btnNavMap"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#E0E0E0">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+                        <ImageView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:src="@android:drawable/ic_dialog_map"
+                            android:background="@color/icon_bg_green"
+                            android:padding="12dp"
+                            app:tint="@color/main_green"
+                            android:layout_marginBottom="16dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="주차장" android:textColor="@color/text_dark" android:textStyle="bold" android:textSize="16sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="주변 주차장 찾기" android:textColor="@color/text_gray" android:textSize="12sp" android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+            <!-- 2. 2x2 메뉴 그리드 (두 번째 줄) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="16dp"
+                android:baselineAligned="false">
+
+                <!-- [결제수단] 버튼 -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/btnNavPayment"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#E0E0E0">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+                        <ImageView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:src="@android:drawable/ic_menu_manage"
+                            android:background="#E0F7FA"
+                            android:padding="12dp"
+                            app:tint="#00838F"
+                            android:layout_marginBottom="16dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="결제수단" android:textColor="@color/text_dark" android:textStyle="bold" android:textSize="16sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="결제 방법 설정" android:textColor="@color/text_gray" android:textSize="12sp" android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- [할인쿠폰] 버튼 -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/btnNavCoupon"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#E0E0E0">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+                        <ImageView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:src="@android:drawable/ic_dialog_info"
+                            android:background="#FFF8E1"
+                            android:padding="12dp"
+                            app:tint="#F57F17"
+                            android:layout_marginBottom="16dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="할인쿠폰" android:textColor="@color/text_dark" android:textStyle="bold" android:textSize="16sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="쿠폰 확인 및 사용" android:textColor="@color/text_gray" android:textSize="12sp" android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+            <!-- 3. 하단 주차 상태 영역 -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp">
+
+                <!-- 3-A. 빈 화면 -->
+                <LinearLayout
+                    android:id="@+id/layoutEmptyParking"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:background="@drawable/ic_launcher_background"
+                    android:backgroundTint="#E5E7EB"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="현재 주차된 차량 정보가 없습니다."
+                        android:textColor="#6B7280"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- 3-B. 주차 정보 화면 -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/layoutParkedInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#E0E0E0"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="24dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="24dp">
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:src="@android:drawable/ic_menu_directions"
+                                android:background="@drawable/ic_launcher_background"
+                                android:backgroundTint="@color/main_green"
+                                android:padding="12dp"
+                                app:tint="@color/white"
+                                android:layout_marginEnd="16dp"/>
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📍 강남역 공영주차장" android:textColor="@color/text_dark" android:textStyle="bold" android:textSize="16sp" android:layout_marginBottom="4dp"/>
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="서울시 강남구 강남대로 지하 1층" android:textColor="@color/main_green" android:textSize="12sp"/>
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- 주차 시간 / 예상 요금 (ID 연결된 부분) -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:background="@color/bg_light_green"
+                            android:padding="16dp"
+                            android:layout_marginBottom="24dp">
+
+                            <!-- 시간 표시 영역 -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+                                <TextView
+                                    android:id="@+id/tvParkedTime"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="입차 시간: 확인 중..."
+                                    android:textColor="@color/text_dark"
+                                    android:layout_marginBottom="8dp"/>
+                                <TextView
+                                    android:id="@+id/tvElapsedTime"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="경과 시간: 00:00:00"
+                                    android:textColor="@color/main_green"
+                                    android:textStyle="bold"
+                                    android:textSize="18sp"/>
+                            </LinearLayout>
+
+                            <!-- 요금 표시 영역 -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="예상 요금" android:textColor="@color/text_dark" android:layout_marginBottom="8dp"/>
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0원" android:textColor="@color/main_green" android:textStyle="bold" android:textSize="18sp"/>
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- 출차하기 버튼 -->
+                        <Button
+                            android:id="@+id/btnExit"
+                            android:layout_width="match_parent"
+                            android:layout_height="60dp"
+                            android:text="출차하기"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/white"
+                            android:backgroundTint="@color/main_green"
+                            app:cornerRadius="12dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </FrameLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
