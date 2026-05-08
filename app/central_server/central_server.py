@@ -3,8 +3,17 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import hashlib
 import requests
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="주차장 중앙 메인 서버")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 SALT = "NAVER_AUTOPAY_SECRET_2026"
 NAVER_PAY_URL = "http://127.0.0.1:9000/api/pay"
@@ -24,6 +33,13 @@ class EntryRequest(BaseModel):
     plate_number: str # 로컬 서버에서는 원본 번호를 받음
     parking_lot_id: str
     entry_time: str
+
+class AppUserRequest(BaseModel):
+    user_id: str
+    password: str = None
+
+class AppUserIdRequest(BaseModel):
+    user_id: str
 
 class ExitRequest(BaseModel):
     car_id: str # 로컬 서버에서는 원본 번호를 받음
@@ -75,6 +91,39 @@ async def receive_payment_receipt(data: dict):
     if status == "SUCCESS":
         print("🔓 [중앙 서버 -> 로컬 서버] 결제 완벽 확인! 차단기 개방 신호 전송!")
     return {"message": "영수증 수신 완료"}
+
+
+# ==========================================
+# 📱 [안드로이드 앱 연동 전용 API]
+# ==========================================
+
+@app.post("/signup")
+async def app_signup(request: AppUserRequest):
+    print(f"📱 [앱 연동] '{request.user_id}' 계정 회원가입 요청 수신")
+    return {"status": "SUCCESS", "message": "회원가입이 완료되었습니다."}
+
+@app.post("/login")
+async def app_login(request: AppUserRequest):
+    print(f"📱 [앱 연동] '{request.user_id}' 계정 로그인 요청 수신")
+    return {"status": "SUCCESS", "message": "로그인 성공"}
+
+@app.get("/parking/status")
+async def app_get_parking_status(user_id: str):
+    print(f"📱 [앱 연동] '{user_id}'님의 주차 상태 조회 요청")
+    # TODO: 나중에 실제 CSV 데이터베이스를 읽어서 반환하도록 수정!
+    # 일단은 앱 화면에 데이터가 잘 뜨는지 테스트하기 위한 더미(가짜) 데이터 전송
+    return {
+        "status": "PARKED",
+        "plate_number": "38거8243",
+        "entry_time": "2026-05-07 10:10:00",
+        "current_fee": 2000
+    }
+
+@app.post("/parking/exit")
+async def app_request_exit(request: AppUserIdRequest):
+    print(f"📱 [앱 연동] '{request.user_id}'님이 앱에서 원격 출차/결제를 요청했습니다!")
+    # TODO: 중앙 서버의 결제 모듈(네이버페이)과 연결하는 로직 추가 필요
+    return {"status": "SUCCESS", "message": "출차 및 결제 요청이 접수되었습니다."}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
