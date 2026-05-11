@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardContainer"
+    android:layout_width="match_parent"
+    android:layout_height="180dp"
+    android:layout_marginBottom="16dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="20dp">
+
+        <!-- 좌측 상단 카드 아이콘 -->
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@android:drawable/ic_menu_crop"
+            app:tint="#FFFFFF"/>
+        <!-- 오류 발생 시 @android:drawable/ic_menu_crop 으로 임시 변경 -->
+
+        <!-- 우측 상단 주 카드 뱃지 / 설정 버튼 -->
+        <TextView
+            android:id="@+id/tvPrimaryStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:background="#40FFFFFF"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:text="✓ 주 카드"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp" />
+
+        <!-- 중앙 하단 카드 번호 -->
+        <TextView
+            android:id="@+id/tvCardNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/tvCardCompany"
+            android:layout_marginBottom="8dp"
+            android:text="**** **** **** 1234"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1"/>
+
+        <!-- 좌측 하단 카드사 이름 -->
+        <TextView
+            android:id="@+id/tvCardCompany"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="신한카드"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp" />
+
+        <!-- 우측 하단 삭제 아이콘 -->
+        <ImageButton
+            android:id="@+id/btnDeleteCard"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_delete"
+            app:tint="#FFFFFF" />
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

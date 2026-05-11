@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -12,8 +13,19 @@ import java.util.List;
 
 public class CreditCardAdapter extends RecyclerView.Adapter<CreditCardAdapter.CardViewHolder> {
 
-    private List<CreditCardItem> cardList;
+    public interface OnDeleteClickListener {
+        void onDelete(CreditCardItem item);
+    }
 
+    private List<CreditCardItem> cardList;
+    private OnDeleteClickListener deleteListener;
+
+    public CreditCardAdapter(List<CreditCardItem> cardList, OnDeleteClickListener deleteListener) {
+        this.cardList = cardList;
+        this.deleteListener = deleteListener;
+    }
+
+    // 기존 코드 호환용
     public CreditCardAdapter(List<CreditCardItem> cardList) {
         this.cardList = cardList;
     }
@@ -32,16 +44,25 @@ public class CreditCardAdapter extends RecyclerView.Adapter<CreditCardAdapter.Ca
         holder.tvCardNumber.setText(item.getCardNumber());
         holder.tvCardCompany.setText(item.getCardCompany());
 
-        // 데이터에 지정된 헥사코드(Hex) 색상으로 카드 배경색 변경
-        holder.cardContainer.setCardBackgroundColor(Color.parseColor(item.getBgColorHex()));
+        try {
+            holder.cardContainer.setCardBackgroundColor(Color.parseColor(item.getBgColorHex()));
+        } catch (Exception e) {
+            holder.cardContainer.setCardBackgroundColor(Color.parseColor("#4C6BFF")); // 파싱 실패 시 기본색
+        }
 
         if (item.isPrimary()) {
             holder.tvPrimaryStatus.setText("✓ 주 카드");
-            holder.tvPrimaryStatus.setBackgroundColor(Color.parseColor("#40FFFFFF")); // 반투명 흰색
+            holder.tvPrimaryStatus.setBackgroundColor(Color.parseColor("#40FFFFFF"));
         } else {
             holder.tvPrimaryStatus.setText("주 카드로 설정");
-            holder.tvPrimaryStatus.setBackgroundColor(Color.parseColor("#20000000")); // 반투명 검정
+            holder.tvPrimaryStatus.setBackgroundColor(Color.parseColor("#20000000"));
         }
+
+        holder.btnDeleteCard.setOnClickListener(v -> {
+            if (deleteListener != null) {
+                deleteListener.onDelete(item);
+            }
+        });
     }
 
     @Override
@@ -49,9 +70,16 @@ public class CreditCardAdapter extends RecyclerView.Adapter<CreditCardAdapter.Ca
         return cardList.size();
     }
 
+    public void updateList(List<CreditCardItem> newList) {
+        cardList.clear();
+        cardList.addAll(newList);
+        notifyDataSetChanged();
+    }
+
     static class CardViewHolder extends RecyclerView.ViewHolder {
         CardView cardContainer;
         TextView tvCardNumber, tvCardCompany, tvPrimaryStatus;
+        ImageButton btnDeleteCard;
 
         public CardViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -59,6 +87,7 @@ public class CreditCardAdapter extends RecyclerView.Adapter<CreditCardAdapter.Ca
             tvCardNumber = itemView.findViewById(R.id.tvCardNumber);
             tvCardCompany = itemView.findViewById(R.id.tvCardCompany);
             tvPrimaryStatus = itemView.findViewById(R.id.tvPrimaryStatus);
+            btnDeleteCard = itemView.findViewById(R.id.btnDeleteCard);
         }
     }
 }

@@ -6,7 +6,7 @@
     <!-- 주차패스 앱 메인 컬러 -->
     <color name="main_green">#5DB075</color>
     <color name="bg_light_green">#F4FBF6</color>
-    <color name="text_dark">#333333</color>
-    <color name="text_gray">#888888</color>
+    <color name="text_dark">#1A1A1A</color>
+    <color name="text_gray">#555555</color>
     <color name="icon_bg_green">#E8F5E9</color>
 </resources>

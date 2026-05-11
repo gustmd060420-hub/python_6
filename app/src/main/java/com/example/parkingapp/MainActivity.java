@@ -31,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private CardView layoutParkedInfo;
     private TextView tvParkedTime;
     private TextView tvElapsedTime;
+    private TextView tvParkingLocation;
+    private TextView tvParkingFee;
 
     // 2. 스마트 폴링을 위한 변수
     private Handler handler = new Handler(Looper.getMainLooper());
@@ -60,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
         layoutParkedInfo = findViewById(R.id.layoutParkedInfo);
         tvParkedTime = findViewById(R.id.tvParkedTime);
         tvElapsedTime = findViewById(R.id.tvElapsedTime);
+        tvParkingLocation = findViewById(R.id.tvParkingLocation);
+        tvParkingFee = findViewById(R.id.tvParkingFee);
 
         // 하단 메뉴 클릭 이벤트
         btnNavCar.setOnClickListener(v -> {
@@ -172,30 +176,26 @@ public class MainActivity extends AppCompatActivity {
         stopRealTimeClock();
         this.serverEntryTimeStr = entryTimeStr;
 
-        // 1. 서버 시간을 밀리초 단위로 변환 (타이머 바깥에서 딱 한 번만 실행)
         long tempEntryTime = 0;
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-            sdf.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Seoul")); // 한국 시간 고정
+            sdf.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Seoul"));
             Date entryDate = sdf.parse(serverEntryTimeStr);
             tempEntryTime = entryDate.getTime();
 
-            // 2. 핵심 보정: 서버 시간(입차 시간)이 스마트폰 시간보다 미래라면?
-            // 기기 시계가 느린 것이므로, 입차 시간을 그냥 스마트폰의 '현재 시간'으로 당겨버립니다.
             if (tempEntryTime > System.currentTimeMillis()) {
                 tempEntryTime = System.currentTimeMillis();
             }
         } catch (Exception e) {
             e.printStackTrace();
-            tempEntryTime = System.currentTimeMillis(); // 에러 발생 시 현재 시간 기준
+            tempEntryTime = System.currentTimeMillis();
         }
 
-        final long finalEntryTime = tempEntryTime; // 타이머 내부에서 쓰기 위해 final 선언
+        final long finalEntryTime = tempEntryTime;
 
         timerRunnable = new Runnable() {
             @Override
             public void run() {
-                // 3. 타이머 내부에서는 복잡한 계산 없이 (현재 시간 - 보정된 입차 시간)만 수행
                 long diff = System.currentTimeMillis() - finalEntryTime;
 
                 int hours = (int) (diff / (1000 * 60 * 60));
@@ -204,11 +204,9 @@ public class MainActivity extends AppCompatActivity {
 
                 String elapsedStr = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, mins, secs);
 
-                // 화면 업데이트
                 tvParkedTime.setText("입차 시간: " + serverEntryTimeStr.substring(11, 19));
                 tvElapsedTime.setText("경과 시간: " + elapsedStr);
 
-                // 1초 뒤 반복
                 timerHandler.postDelayed(this, 1000);
             }
         };
@@ -244,6 +242,13 @@ public class MainActivity extends AppCompatActivity {
                     if (isParked) {
                         layoutEmptyParking.setVisibility(View.GONE);
                         layoutParkedInfo.setVisibility(View.VISIBLE);
+
+                        // 위치 및 요금 업데이트
+                        String location = response.body().getLocation();
+                        String fee = response.body().getFee();
+                        tvParkingLocation.setText("📍 " + (location != null ? location : "-"));
+                        tvParkingFee.setText(fee != null ? fee : "0원");
+
                         startRealTimeClock(response.body().getParkedTime());
                     } else {
                         layoutEmptyParking.setVisibility(View.VISIBLE);

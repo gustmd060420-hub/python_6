@@ -46,4 +46,10 @@ dependencies {
     // Retrofit2 및 JSON 변환(Gson) 라이브러리
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    // 네이버 지도 SDK
+    implementation("com.naver.maps:map-sdk:3.19.0")
+    // 네이버 지도 위치 추적 필수 의존성
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    // QR 코드 스캔
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 }

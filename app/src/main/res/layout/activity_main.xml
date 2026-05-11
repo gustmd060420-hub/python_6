@@ -222,7 +222,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="현재 주차된 차량 정보가 없습니다."
-                        android:textColor="#6B7280"
+                        android:textColor="#555555"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -264,8 +264,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical">
-                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📍 강남역 공영주차장" android:textColor="@color/text_dark" android:textStyle="bold" android:textSize="16sp" android:layout_marginBottom="4dp"/>
-                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="서울시 강남구 강남대로 지하 1층" android:textColor="@color/main_green" android:textSize="12sp"/>
+                                <TextView android:id="@+id/tvParkingLocation" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📍 -" android:textColor="@color/text_dark" android:textStyle="bold" android:textSize="16sp" android:layout_marginBottom="4dp"/>
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="" android:textColor="@color/main_green" android:textSize="12sp"/>
                             </LinearLayout>
                         </LinearLayout>
 
@@ -308,7 +308,7 @@
                                 android:layout_weight="1"
                                 android:orientation="vertical">
                                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="예상 요금" android:textColor="@color/text_dark" android:layout_marginBottom="8dp"/>
-                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0원" android:textColor="@color/main_green" android:textStyle="bold" android:textSize="18sp"/>
+                                <TextView android:id="@+id/tvParkingFee" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0원" android:textColor="@color/main_green" android:textStyle="bold" android:textSize="18sp"/>
                             </LinearLayout>
                         </LinearLayout>
 

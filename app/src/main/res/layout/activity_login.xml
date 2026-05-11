@@ -13,7 +13,7 @@
         android:text="주차패스"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:textColor="#333333"
+        android:textColor="#1A1A1A"
         android:layout_marginBottom="32dp"/>
 
     <!-- 회원가입 시에만 사용할 이름 입력칸 (로그인 시엔 무시됨) -->
@@ -22,6 +22,9 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:hint="이름 (회원가입 시 입력)"
+        android:inputType="text"
+        android:textColor="#1A1A1A"
+        android:textColorHint="#888888"
         android:background="#FFFFFF"
         android:paddingHorizontal="16dp"
         android:layout_marginBottom="12dp"/>
@@ -31,6 +34,9 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:hint="아이디"
+        android:inputType="text"
+        android:textColor="#1A1A1A"
+        android:textColorHint="#888888"
         android:background="#FFFFFF"
         android:paddingHorizontal="16dp"
         android:layout_marginBottom="12dp"/>
@@ -41,6 +47,8 @@
         android:layout_height="50dp"
         android:hint="비밀번호"
         android:inputType="textPassword"
+        android:textColor="#1A1A1A"
+        android:textColorHint="#888888"
         android:background="#FFFFFF"
         android:paddingHorizontal="16dp"
         android:layout_marginBottom="24dp"/>

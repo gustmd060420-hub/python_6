@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/white"
+    app:strokeWidth="1dp"
+    app:strokeColor="#E0E0E0">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- 상단: 차량 번호 및 주 차랑 뱃지 -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <ImageView
+                android:id="@+id/ivCarIcon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@android:drawable/ic_menu_directions"
+                android:background="@color/icon_bg_green"
+                android:padding="12dp"
+                app:tint="@color/main_green"
+                android:layout_centerVertical="true"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_toEndOf="@id/ivCarIcon"
+                android:layout_marginStart="16dp"
+                android:layout_centerVertical="true">
+                <TextView
+                    android:id="@+id/tvCarNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="12가 3456"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_dark"/>
+                <TextView
+                    android:id="@+id/tvCarModel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="현대 아반떼"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_gray"
+                    android:layout_marginTop="2dp"/>
+            </LinearLayout>
+
+            <!-- 주 차량 뱃지 (조건에 따라 보임/숨김 처리) -->
+            <TextView
+                android:id="@+id/tvPrimaryBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="주 차량"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@color/main_green"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:visibility="gone"/>
+        </RelativeLayout>
+
+        <!-- 중단: 차량 상세 스펙 (색상, 연식) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp"
+            android:baselineAligned="false">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@color/bg_light_green"
+                android:padding="12dp"
+                android:layout_marginEnd="8dp"
+                app:cornerRadius="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="차량 색상" android:textColor="@color/text_gray" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+                <TextView android:id="@+id/tvCarColor" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="화이트" android:textColor="@color/text_dark" android:textStyle="bold" android:textSize="14sp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@color/bg_light_green"
+                android:padding="12dp"
+                android:layout_marginStart="8dp"
+                app:cornerRadius="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="연식" android:textColor="@color/text_gray" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+                <TextView android:id="@+id/tvCarYear" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="2023년" android:textColor="@color/text_dark" android:textStyle="bold" android:textSize="14sp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 하단: 상세정보 버튼 및 삭제 버튼 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnDetail"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="상세정보 >"
+                android:textColor="@color/text_dark"
+                android:backgroundTint="@color/bg_light_green"
+                android:layout_marginEnd="8dp"
+                app:cornerRadius="8dp"
+                style="?android:attr/borderlessButtonStyle"/>
+
+            <ImageButton
+                android:id="@+id/btnDelete"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:backgroundTint="#FFF0F0"
+                android:src="@android:drawable/ic_menu_delete"
+                app:tint="#FF3B30"/>
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

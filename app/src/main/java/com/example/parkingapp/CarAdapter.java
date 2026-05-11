@@ -3,6 +3,7 @@ package com.example.parkingapp;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -10,35 +11,44 @@ import java.util.List;
 
 public class CarAdapter extends RecyclerView.Adapter<CarAdapter.CarViewHolder> {
 
-    private List<CarItem> carList;
+    public interface OnDeleteClickListener {
+        void onDelete(CarItem item);
+    }
 
-    public CarAdapter(List<CarItem> carList) {
+    private List<CarItem> carList;
+    private OnDeleteClickListener deleteListener;
+
+    public CarAdapter(List<CarItem> carList, OnDeleteClickListener deleteListener) {
         this.carList = carList;
+        this.deleteListener = deleteListener;
     }
 
     @NonNull
     @Override
     public CarViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // item_car.xml을 가져와서 화면에 그릴 준비를 함
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_car, parent, false);
         return new CarViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull CarViewHolder holder, int position) {
-        // 데이터를 화면의 각 TextView에 연결함
         CarItem item = carList.get(position);
         holder.tvCarNumber.setText(item.getCarNumber());
         holder.tvCarModel.setText(item.getCarModel());
         holder.tvCarColor.setText(item.getCarColor());
         holder.tvCarYear.setText(item.getCarYear());
 
-        // 주 차량이면 뱃지를 보여주고, 아니면 숨김
         if (item.isPrimary()) {
             holder.tvPrimaryBadge.setVisibility(View.VISIBLE);
         } else {
             holder.tvPrimaryBadge.setVisibility(View.GONE);
         }
+
+        holder.btnDelete.setOnClickListener(v -> {
+            if (deleteListener != null) {
+                deleteListener.onDelete(item);
+            }
+        });
     }
 
     @Override
@@ -46,9 +56,15 @@ public class CarAdapter extends RecyclerView.Adapter<CarAdapter.CarViewHolder> {
         return carList.size();
     }
 
-    // 화면의 요소들을 찾아놓는 역할 (뷰홀더)
+    public void updateList(List<CarItem> newList) {
+        carList.clear();
+        carList.addAll(newList);
+        notifyDataSetChanged();
+    }
+
     static class CarViewHolder extends RecyclerView.ViewHolder {
         TextView tvCarNumber, tvCarModel, tvCarColor, tvCarYear, tvPrimaryBadge;
+        ImageButton btnDelete;
 
         public CarViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -57,6 +73,7 @@ public class CarAdapter extends RecyclerView.Adapter<CarAdapter.CarViewHolder> {
             tvCarColor = itemView.findViewById(R.id.tvCarColor);
             tvCarYear = itemView.findViewById(R.id.tvCarYear);
             tvPrimaryBadge = itemView.findViewById(R.id.tvPrimaryBadge);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
         }
     }
 }

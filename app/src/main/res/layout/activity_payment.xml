@@ -75,12 +75,13 @@
                 android:id="@+id/tvTotalCardCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="총 3개"
+                android:text="총 0개"
                 android:textColor="@color/text_gray"
                 android:textSize="14sp"
                 android:layout_marginTop="4dp"/>
         </LinearLayout>
         <Button
+            android:id="@+id/btnAddCard"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
