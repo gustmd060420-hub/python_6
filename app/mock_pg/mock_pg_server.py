@@ -28,4 +28,4 @@ async def request_payment(data: dict, background_tasks: BackgroundTasks):
     return {"message": "네이버페이 결제 요청이 접수되었습니다."}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=9000)
+    uvicorn.run(app, host="0.0.0.0", port=9000)

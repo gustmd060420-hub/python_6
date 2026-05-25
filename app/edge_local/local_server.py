@@ -1,84 +1,127 @@
 import cv2
-import requests
 import hashlib
+import time
+import requests
 from datetime import datetime
 from ai_pipeline import RealTimePlateReader, LicensePlateEnsembler
 
-# 💡 1. 팀원이 만든 요금 정산 모듈 불러오기!
-from fee_calculator import NaverAutoPass
+CENTRAL_SERVER = "http://127.0.0.1:8000"
+PARKING_LOT_ID = "INHA_UNIV_01"
+SALT = "NAVER_AUTOPAY_SECRET_2026"
 
-# 💡 2. 팀원의 시스템(CSV DB) 장착
-parking_system = NaverAutoPass('../../data/db/parking_logs_v3.csv')
+MAX_RETRIES = 3          # 번호판 인식 실패 시 재시도 횟수
+GATE_POLL_INTERVAL = 1   # 차단기 폴링 간격 (초)
+GATE_POLL_MAX = 15       # 최대 폴링 횟수 (15초 대기)
 
-def run_local_camera(video_path, camera_mode="ENTRY"):
-    print(f"\n🎥 주차장 [{camera_mode}] 카메라(AI 탑재)가 켜졌습니다...")
-    
-    ai_reader = RealTimePlateReader('../../models/best.pt')
+
+def encrypt_plate(plate: str) -> str:
+    return hashlib.sha256((plate + SALT).encode()).hexdigest()
+
+
+def _recognize_plate(video_path, ai_reader, camera_mode):
+    """영상/웹캠에서 30프레임 앙상블로 번호판 인식. 성공 시 (plate, token), 실패 시 (None, None)"""
     ensembler = LicensePlateEnsembler(confidence_threshold=0.3)
-    cap = cv2.VideoCapture(video_path) 
-    
-    valid_frames = 0 
+    cap = cv2.VideoCapture(video_path)
+    valid_frames = 0
+
     while cap.isOpened():
         ret, frame = cap.read()
-        if not ret: break
-            
+        if not ret:
+            break
         plate_text, confidence = ai_reader.process_frame(frame)
         if plate_text:
             ensembler.add_frame_result(plate_text, confidence)
-            valid_frames += 1 
-            print(f"[{valid_frames}/30] 스캔 중... : {plate_text} (확신도: {confidence:.2f})")
-            
+            valid_frames += 1
+            print(f"[{camera_mode}][{valid_frames}/30] {plate_text} (신뢰도: {confidence:.2f})")
         if valid_frames >= 30:
             break
-    cap.release()
-    
-    final_plate, msg = ensembler.get_final_result()
-    
-    if final_plate:
-        print(f"\n🎯 [AI 최종 판독] 차량 번호: {final_plate}")
-        
-        # 💡 3. AI가 번호를 넘겨주면, 팀원의 요금 정산 시스템 실행!
-        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print("-" * 50)
-        
-        if camera_mode == "ENTRY":
-            success, message = parking_system.process_entry(final_plate, now_str)
-            print(message)
-            
-            # 💡 암호화는 중앙 서버가 담당하므로 로컬은 원본 데이터를 그대로 쏩니다.
-            try:
-                print("🌐 중앙 서버로 입차 데이터를 전송합니다...")
-                resp = requests.post("http://127.0.0.1:8000/api/entry", 
-                                     json={"plate_number": final_plate, "parking_lot_id": "INHA_UNIV_01", "entry_time": now_str})
-                print("📬 중앙 서버 응답:", resp.json())
-            except Exception as e:
-                print(f"⚠️ 중앙 서버 통신 실패: {e}")
 
-        elif camera_mode == "EXIT":
-            # 1. 로컬 요금 계산기 실행
-            success, message, final_fee = parking_system.process_settlement(final_plate, now_str) 
-            print(message)
-            
-            # 2. 요금이 발생했다면 중앙 서버로 결제(출차) 요청!
-            # 2. 요금이 발생했다면 중앙 서버로 결제(출차) 요청!
-            if success and final_fee > 0:
-                try:
-                    print("🌐 중앙 서버로 결제 요청을 쏘고 대기합니다...")
-                    # 💡 핵심 수정: numpy int64를 순수 python int로 캐스팅!
-                    resp = requests.post("http://127.0.0.1:8000/api/request-exit", 
-                                         json={"car_id": final_plate, "fee": int(final_fee)})
-                    print("📬 중앙 서버 응답:", resp.json())
-                except Exception as e:
-                    print(f"⚠️ 중앙 서버 통신 실패: {e}") # 에러의 진짜 이유를 보도록 수정
-        
-    else:
-        print("\n❌ 번호판 인식 실패. 차단기 유지.")
+    cap.release()
+    final_plate, _ = ensembler.get_final_result()
+    if not final_plate:
+        return None, None
+    return final_plate, encrypt_plate(final_plate)
+
+
+def _poll_gate(payment_token: str) -> bool:
+    """차단기 개방 신호 폴링. 개방되면 True 반환"""
+    print("결제 완료 대기 중...", end="", flush=True)
+    for _ in range(GATE_POLL_MAX):
+        time.sleep(GATE_POLL_INTERVAL)
+        try:
+            resp = requests.get(f"{CENTRAL_SERVER}/api/gate-status",
+                                params={"payment_token": payment_token}, timeout=3)
+            if resp.json().get("open_gate"):
+                print(" 차단기 개방!")
+                return True
+        except Exception:
+            pass
+        print(".", end="", flush=True)
+    print(" 타임아웃")
+    return False
+
+
+def run_local_camera(video_path, camera_mode="ENTRY"):
+    print(f"\n[{camera_mode}] 카메라 시작: {video_path}")
+
+    ai_reader = RealTimePlateReader('../../models/best.pt')
+    final_plate = None
+    payment_token = None
+
+    for attempt in range(1, MAX_RETRIES + 1):
+        if attempt > 1:
+            print(f"번호판 재인식 시도 {attempt}/{MAX_RETRIES}...")
+        final_plate, payment_token = _recognize_plate(video_path, ai_reader, camera_mode)
+        if final_plate:
+            break
+
+    if not final_plate:
+        print(f"번호판 인식 실패 ({MAX_RETRIES}회 시도). 차단기 유지.")
+        return
+
+    print(f"\n[AI 최종 판독] {final_plate}")
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    if camera_mode == "ENTRY":
+        try:
+            resp = requests.post(f"{CENTRAL_SERVER}/api/entry", json={
+                "plate_number": final_plate,
+                "parking_lot_id": PARKING_LOT_ID,
+                "entry_time": now_str
+            })
+            result = resp.json()
+            print("중앙 서버 응답:", result)
+            if result.get("open_gate"):
+                print("🔓 차단기 개방")
+            else:
+                print("❌ 미등록 차량 - 일반 발권")
+        except Exception as e:
+            print(f"중앙 서버 통신 실패: {e}")
+
+    elif camera_mode == "EXIT":
+        try:
+            resp = requests.post(f"{CENTRAL_SERVER}/api/request-exit", json={
+                "car_id": final_plate,
+                "fee": 0  # 중앙 서버가 CSV에서 직접 계산
+            })
+            result = resp.json()
+            print("중앙 서버 응답:", result)
+
+            if result.get("status") == "ERROR":
+                print("❌ 출차 처리 실패:", result.get("message"))
+                return
+
+            # 결제 완료 후 차단기 개방 폴링
+            gate_opened = _poll_gate(payment_token)
+            if not gate_opened:
+                print("⚠️ 결제 확인 타임아웃. 수동 개방 필요.")
+
+        except Exception as e:
+            print(f"중앙 서버 통신 실패: {e}")
+
 
 if __name__ == "__main__":
-    # 🚗 [테스트 A] 1번 비디오 차량 사이클
-    #run_local_camera("../../data/media/test_video1.mp4", camera_mode="ENTRY")
-    run_local_camera("../../data/media/test_video1.mp4", camera_mode="EXIT")
-    
-    # 🚙 [테스트 B] 2번 비디오 차량 사이클
-    #run_local_camera("../../data/media/test_video2.mp4", camera_mode="ENTRY")
-    run_local_camera("../../data/media/test_video2.mp4", camera_mode="EXIT")
+    run_local_camera("../../data/media/test_video1.mp4", camera_mode="ENTRY")
+    # run_local_camera("../../data/media/test_video1.mp4", camera_mode="EXIT")
+    # run_local_camera("../../data/media/test_video2.mp4", camera_mode="ENTRY")
+    # run_local_camera("../../data/media/test_video2.mp4", camera_mode="EXIT")
