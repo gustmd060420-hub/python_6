@@ -1,0 +1,16 @@
+# 빌드 결과물
+ParkingApp/.gradle/
+ParkingApp/build/
+ParkingApp/app/build/
+ParkingApp/ParkingApp/.gradle/
+ParkingApp/ParkingApp/build/
+ParkingApp/ParkingApp/app/build/
+ParkingApp/smart-parking-system/runs/
+
+# 환경 설정
+local.properties
+.idea/
+**/__pycache__/
+*.pyc
+*.pyc
+.venv/
