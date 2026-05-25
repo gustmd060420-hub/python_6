@@ -1,3 +1,7 @@
+# ⚠️ 이 파일은 더 이상 사용하지 않습니다.
+# 통합 서버: smart-parking-system/app/central_server/central_server.py
+# 실행 방법: cd smart-parking-system/app/central_server && python central_server.py
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from datetime import datetime

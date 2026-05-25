@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private CardView layoutParkedInfo;
     private TextView tvParkedTime;
     private TextView tvElapsedTime;
+    private TextView tvFee;
 
     // 2. 스마트 폴링을 위한 변수
     private Handler handler = new Handler(Looper.getMainLooper());
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private Handler timerHandler = new Handler(Looper.getMainLooper());
     private Runnable timerRunnable;
     private String serverEntryTimeStr = "";
+    private boolean isTimerRunning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         layoutParkedInfo = findViewById(R.id.layoutParkedInfo);
         tvParkedTime = findViewById(R.id.tvParkedTime);
         tvElapsedTime = findViewById(R.id.tvElapsedTime);
+        tvFee = findViewById(R.id.tvFee);
 
         // 하단 메뉴 클릭 이벤트
         btnNavCar.setOnClickListener(v -> {
@@ -169,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
 
     // 실시간 시계 로직
     private void startRealTimeClock(String entryTimeStr) {
+        if (isTimerRunning) return;
         stopRealTimeClock();
         this.serverEntryTimeStr = entryTimeStr;
 
@@ -212,10 +216,12 @@ public class MainActivity extends AppCompatActivity {
                 timerHandler.postDelayed(this, 1000);
             }
         };
+        isTimerRunning = true;
         timerHandler.post(timerRunnable);
     }
 
     private void stopRealTimeClock() {
+        isTimerRunning = false;
         if (timerHandler != null && timerRunnable != null) {
             timerHandler.removeCallbacks(timerRunnable);
         }
@@ -245,6 +251,8 @@ public class MainActivity extends AppCompatActivity {
                         layoutEmptyParking.setVisibility(View.GONE);
                         layoutParkedInfo.setVisibility(View.VISIBLE);
                         startRealTimeClock(response.body().getParkedTime());
+                        String fee = response.body().getFee();
+                        if (fee != null && !fee.isEmpty()) tvFee.setText(fee);
                     } else {
                         layoutEmptyParking.setVisibility(View.VISIBLE);
                         layoutParkedInfo.setVisibility(View.GONE);

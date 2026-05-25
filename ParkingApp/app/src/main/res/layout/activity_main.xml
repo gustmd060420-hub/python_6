@@ -308,7 +308,7 @@
                                 android:layout_weight="1"
                                 android:orientation="vertical">
                                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="예상 요금" android:textColor="@color/text_dark" android:layout_marginBottom="8dp"/>
-                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0원" android:textColor="@color/main_green" android:textStyle="bold" android:textSize="18sp"/>
+                                <TextView android:id="@+id/tvFee" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0원" android:textColor="@color/main_green" android:textStyle="bold" android:textSize="18sp"/>
                             </LinearLayout>
                         </LinearLayout>
 
